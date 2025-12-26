@@ -1,35 +1,24 @@
 require("dotenv").config();
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const authRoutes = require("./auth/routes");
 
 const app = express();
 
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     credentials: true,
-//   })
-// );
-
 app.use(express.json());
+app.use(cookieParser());
 
-app.get("api/health", (req, res) => {
-  console.log("Health is good!");
-  res.json({ status: "ok", message: "Uno Api is running" });
+app.use(cors({ origin: processs.env.CORS_ORIGIN, credentials: true }));
+
+app.get("/health", (req, res) => {
+  res.json({ Health: "Good" });
 });
 
-app.post("api/auth/login", (req, res) => {
-  //validate user
-  res.json({ message: "Login Page" });
-});
+app.use("/api/auth", authRoutes);
 
-app.post("api/auth/logout", (req, res) => {
-  //need to delete token
-  res.json({ message: "Logout Page" });
-});
+const port = process.env.PORT || 4000;
 
-const PORT = process.env.PORT || 4000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+app.listen(port, () => {
+  console.log(`API Running On Port ${port}`);
 });
