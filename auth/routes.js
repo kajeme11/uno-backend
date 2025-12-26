@@ -25,25 +25,52 @@ function setAuthCookies(res, token) {
   });
 }
 
-// router.post(
-//   "/register",
-//   [
-//     body("email").isEmail().normalizeEmail(),
-//     body("username")
-//       .isLength({ min: 3, max: 50 })
-//       .matches("/^[a-zA-Z0-9_]+$/")
-//       .withMessage("Username must be alphanumeric/underscore"),
-//   ],
-//   async (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       return res
-//         .status(400)
-//         .json({ error: "VALIDATION_ERROR", details: errors.array() });
-//     }
+router.post(
+  "/register",
+  [
+    body("email").isEmail().normalizeEmail(),
+    body("username")
+      .isLength({ min: 3, max: 50 })
+      .matches("/^[a-zA-Z0-9_]+$/")
+      .withMessage("Username must be alphanumeric/underscore"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ error: "VALIDATION_ERROR", details: errors.array() });
+    }
 
-//     const email = await findUserByEmail(email);
-//     const username = await findUsersByUserName(username);
+    const email = req.body.email.toLowerCase();
+    const username = req.body.username;
+    const password = req.body.password;
 
-//   }
-// );
+    try {
+      const emailExists = await findUserByEmail(email);
+      if (emailExists)
+        return res.status(409).json({ error: "Email already registered" });
+      const usernameExists = await findUsersByUserName(username);
+      if (usernameExists)
+        return res.status(409).json({ error: "Username Already registered" });
+      const password = await bcrypt.hash(password, 12);
+
+      const token = jwt.sign(
+        { sub: username.id, username: username.username },
+        process.env.JWT_SECRETE,
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      );
+
+      setAuthCookies(res, token);
+
+      return res
+        .status(201)
+        .json({ id: user.id, email: user.email, username: user.username });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ error: "SERVER_ERROR" });
+    }
+  }
+);
+
+module.exports = router;
