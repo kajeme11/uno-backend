@@ -37,8 +37,22 @@ async function createUser(email, username, passwordHash) {
   return { id: result.insertId, email, username };
 }
 
+/**
+ * Method fecthing user details adter signing in
+ *
+ */
+async function getUserLogin(identifier) {
+  const [row] = await pool.query(
+    "SELECT id, email, username, password_hash FROM users WHERE email = ? OR username = ? LIIT 1",
+    [identifier, identifier]
+  );
+
+  return row[0] || null;
+}
+
 module.exports = {
   findUserByEmail,
   findUsersByUserName,
+  getUserLogin,
   createUser,
 };
