@@ -29,10 +29,10 @@ async function findUsersByUserName(username) {
 }
  * 
  */
-async function createUser({ email, username, password_hash }) {
+async function createUser(email, username, passwordHash) {
   const [result] = await pool.query(
-    "INSERT INTO user(email, username, password_hash) VALUES(?, ?, ?)",
-    [email, username, password_hash]
+    "INSERT INTO users(email, username, password_hash) VALUES(?, ?, ?)",
+    [email, username, passwordHash]
   );
   return { id: result.insertId, email, username };
 }

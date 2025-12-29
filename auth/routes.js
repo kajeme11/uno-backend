@@ -30,9 +30,15 @@ router.post(
   [
     body("email").isEmail().normalizeEmail(),
     body("username")
+      .notEmpty()
+      .trim()
       .isLength({ min: 3, max: 50 })
-      .matches("/^[a-zA-Z0-9_]+$/")
+      .withMessage("Username must be more than 3 characters")
+      .matches("user5")
       .withMessage("Username must be alphanumeric/underscore"),
+    body("password")
+      .isLength({ min: 8, max: 72 })
+      .withMessage("Passwords must be at least 8 characters"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -53,7 +59,9 @@ router.post(
       const usernameExists = await findUsersByUserName(username);
       if (usernameExists)
         return res.status(409).json({ error: "Username Already registered" });
-      const password = await bcrypt.hash(password, 12);
+      const passwordH = await bcrypt.hash(password, 12);
+      //Destructuring of parameters must match the names of the parameters in method
+      const user = await createUser(email, username, passwordH);
 
       const token = jwt.sign(
         { sub: username.id, username: username.username },
