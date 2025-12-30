@@ -5,6 +5,7 @@ const { body, validationResult } = require("express-validator");
 const {
   findUserByEmail,
   findUsersByUserName,
+  getUserLogin,
   createUser,
 } = require("./service");
 
@@ -59,9 +60,9 @@ router.post(
       const usernameExists = await findUsersByUserName(username);
       if (usernameExists)
         return res.status(409).json({ error: "Username Already registered" });
-      const passwordH = await bcrypt.hash(password, 12);
+      const passwordHash = await bcrypt.hash(password, 12);
       //Destructuring of parameters must match the names of the parameters in method
-      const user = await createUser(email, username, passwordH);
+      const user = await createUser(email, username, [passwordHash]);
 
       const token = jwt.sign(
         { sub: username.id, username: username.username },
@@ -77,6 +78,51 @@ router.post(
     } catch (err) {
       console.log(err);
       return res.status(500).json({ error: "SERVER_ERROR" });
+    }
+  }
+);
+
+router.post(
+  "/login",
+  [
+    body("username").trim().notEmpty().withMessage("Username is required"),
+    body("password").isString().notEmpty().withMessage("Password is required"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ error: "LOGIN_AUTH_ERROR", details: errors.array() });
+    }
+    const username = req.body.username.trim();
+    const password = req.body.password;
+
+    try {
+      const user = await getUserLogin(username);
+      if (!user) {
+        return res.status(401).json({ error: "INVALID_CREDENTIALS" });
+      }
+      const passwordCheck = bcrypt.compare(password, user.passwordHash);
+      if (!passwordCheck) {
+        return res.status(401).json({ error: "INVALID_CREDENTIALS" });
+      }
+
+      const token = jwt.sign(
+        { sub: user.id, username: user.username },
+        process.env.JWT_SECRETE,
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      );
+
+      setAuthCookies(res, token);
+      return res.json({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ errors: "SERVER_ERROR" });
     }
   }
 );
