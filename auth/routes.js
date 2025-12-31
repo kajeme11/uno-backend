@@ -8,6 +8,7 @@ const {
   getUserLogin,
   createUser,
 } = require("./service");
+const { authenticate } = require("../middleware/webSession");
 
 const router = express.Router();
 
@@ -131,5 +132,10 @@ router.post(
     }
   }
 );
+
+router.get("/user", authenticate, async (req, res) => {
+  console.log("HI")
+  return res.json({ id: req.user.id, username: req.user.username });
+});
 
 module.exports = router;

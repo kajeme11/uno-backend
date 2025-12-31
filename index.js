@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const authRoutes = require("./auth/routes");
 
+
 const app = express();
 
 app.use(express.json());
