@@ -43,7 +43,7 @@ async function createUser(email, username, passwordHash) {
  */
 async function getUserLogin(identifier) {
   const [row] = await pool.query(
-    "SELECT id, email, username, password_hash FROM users WHERE email = ? OR username = ? LIIT 1",
+    "SELECT id, email, username, password_hash FROM users WHERE email = ? OR username = ? LIMIT 1",
     [identifier, identifier]
   );
 

@@ -89,12 +89,17 @@ router.post(
     body("password").isString().notEmpty().withMessage("Password is required"),
   ],
   async (req, res) => {
+    console.log("HELLO");
     const errors = validationResult(req);
+    console.log("HELLO");
     if (!errors.isEmpty()) {
       return res
         .status(400)
         .json({ error: "LOGIN_AUTH_ERROR", details: errors.array() });
     }
+
+    console.log(req.body.password);
+    console.log(req.body.username);
     const username = req.body.username.trim();
     const password = req.body.password;
 
@@ -103,7 +108,7 @@ router.post(
       if (!user) {
         return res.status(401).json({ error: "INVALID_CREDENTIALS" });
       }
-      const passwordCheck = bcrypt.compare(password, user.passwordHash);
+      const passwordCheck = await bcrypt.compare(password, user.password_hash);
       if (!passwordCheck) {
         return res.status(401).json({ error: "INVALID_CREDENTIALS" });
       }
