@@ -26,7 +26,6 @@ function setAuthCookies(res, token) {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 }
-
 router.post(
   "/register",
   [
@@ -36,7 +35,7 @@ router.post(
       .trim()
       .isLength({ min: 3, max: 50 })
       .withMessage("Username must be more than 3 characters")
-      .matches("user5")
+      .matches(/^[A-Za-z0-9_]+$/)
       .withMessage("Username must be alphanumeric/underscore"),
     body("password")
       .isLength({ min: 8, max: 72 })
@@ -103,7 +102,7 @@ router.post(
     console.log(req.body.username);
     const username = req.body.username.trim();
     const password = req.body.password;
-
+    console.log("Authenticating!!");
     try {
       const user = await getUserLogin(username);
       if (!user) {
@@ -134,7 +133,7 @@ router.post(
 );
 
 router.get("/user", authenticate, async (req, res) => {
-  console.log("HI")
+  console.log("HI");
   return res.json({ id: req.user.id, username: req.user.username });
 });
 

@@ -4,7 +4,6 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const authRoutes = require("./auth/routes");
 
-
 const app = express();
 
 app.use(express.json());
@@ -18,7 +17,7 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
   console.log(`API Running On Port ${port}`);
