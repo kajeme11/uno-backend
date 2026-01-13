@@ -137,4 +137,13 @@ router.get("/user", authenticate, async (req, res) => {
   return res.json({ id: req.user.id, username: req.user.username });
 });
 
+router.post("/logout", (req, res) => {
+  res.clearCookie("auth_token",{
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false
+  });
+  return res.json({ok: true});
+})
+
 module.exports = router;
