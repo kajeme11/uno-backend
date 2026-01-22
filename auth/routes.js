@@ -67,7 +67,7 @@ router.post(
       const token = jwt.sign(
         { sub: username.id, username: username.username },
         process.env.JWT_SECRETE,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
       );
 
       setAuthCookies(res, token);
@@ -79,17 +79,19 @@ router.post(
       console.log(err);
       return res.status(500).json({ error: "SERVER_ERROR" });
     }
-  }
+  },
 );
 
 router.post(
   "/login",
   [
-    body("username").trim().notEmpty().withMessage("Username is required"),
+    body("identifier").trim().notEmpty().withMessage("Username is required"),
     body("password").isString().notEmpty().withMessage("Password is required"),
   ],
   async (req, res) => {
     console.log("HELLO");
+    console.log(req.body.identifier);
+    console.log(req.body.password);
     const errors = validationResult(req);
     console.log("HELLO");
     if (!errors.isEmpty()) {
@@ -99,8 +101,8 @@ router.post(
     }
 
     console.log(req.body.password);
-    console.log(req.body.username);
-    const username = req.body.username.trim();
+    console.log(req.body.identifier);
+    const username = req.body.identifier.trim();
     const password = req.body.password;
     console.log("Authenticating!!");
     try {
@@ -112,11 +114,13 @@ router.post(
       if (!passwordCheck) {
         return res.status(401).json({ error: "INVALID_CREDENTIALS" });
       }
-
+      console.log("$$$$$$$$$$$$");
+      console.log(user);
+      console.log("$$$$$$$$$$$$");
       const token = jwt.sign(
         { sub: user.id, username: user.username },
         process.env.JWT_SECRETE,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
       );
 
       setAuthCookies(res, token);
@@ -129,7 +133,7 @@ router.post(
       console.log(err);
       return res.status(500).json({ errors: "SERVER_ERROR" });
     }
-  }
+  },
 );
 
 router.get("/user", authenticate, async (req, res) => {
@@ -138,12 +142,12 @@ router.get("/user", authenticate, async (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("auth_token",{
+  res.clearCookie("auth_token", {
     httpOnly: true,
     sameSite: "lax",
-    secure: false
+    secure: false,
   });
-  return res.json({ok: true});
-})
+  return res.json({ ok: true });
+});
 
 module.exports = router;
