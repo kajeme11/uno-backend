@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const authRoutes = require("./auth/routes");
+const authRoutes = require("./src/auth/routes");
 
 const app = express();
 
