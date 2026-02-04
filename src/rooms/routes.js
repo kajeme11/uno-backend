@@ -1,7 +1,7 @@
 const express = require("express");
-const { body, validationResult } = require("express-validator");
+const { body, validationResult, query } = require("express-validator");
 const { authenticate } = require("../middleware/webSession");
-const { createRoom } = require("./service");
+const { createRoom, listRooms } = require("./service");
 
 const router = express.Router();
 console.log("At Create Rooms Route");
@@ -40,6 +40,33 @@ router.post(
       return res.status(201).json(room);
     } catch (err) {
       console.log(error);
+      return res.status(500).json({ error: "SERVER_ERROR" });
+    }
+  },
+);
+
+router.get(
+  "/",
+  authenticate,
+  [
+    query("status")
+      .optional()
+      .isIn(["OPEN", "IN_GAME", "CLOSED"])
+      .withMessage("Status must be open, in_game, closed"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ error: "VALIDATION_ERROR_GET_ROOMS", details: errors.array() });
+    }
+    const status = req.query.status || "OPEN";
+    try {
+      const rooms = await listRooms(status);
+      res.json({ rooms });
+    } catch (err) {
+      console.og(err);
       return res.status(500).json({ error: "SERVER_ERROR" });
     }
   },

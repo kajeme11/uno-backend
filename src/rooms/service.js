@@ -64,4 +64,29 @@ async function createRoom({ hostUserId, maxPlayers = 4 }) {
   }
 }
 
-module.exports = { createRoom };
+async function listRooms({ status = "OPEN" } = {}) {
+  const [rows] = await pool.query(
+    `SELECT
+      r.id,
+      r.code,
+      r.status,
+      r.max_players AS maxPlayers,
+      r.host_user_id AS hostUserId,
+      COUNT(rp.user_id) AS currentPlayers,
+      r.created_at AS createdAt
+    FROM rooms r
+    LEFT JOIN room_players rp ON rp.room_id = r.id
+    WHERE r.status = ?
+    GROUP BY r.id
+    ORDER BY r.created_at DESC`,
+    [status],
+  );
+
+  return rows.map((r) => ({
+    ...r,
+    currentPlayers: Number(r.currentPlayers),
+    maxPlayers: Number(r.maxPlayers),
+  }));
+}
+
+module.exports = { createRoom, listRooms };
