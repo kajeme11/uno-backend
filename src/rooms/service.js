@@ -12,15 +12,15 @@ function generateRoomCode(length = 5) {
 // console.log(generateRoomCode());
 
 async function createRoom({ hostUserId, maxPlayers = 4 }) {
+  console.log("Create room! funtion!");
   const conn = await pool.getConnection();
-
   try {
     await conn.beginTransaction();
     /**
      * Create a NonExistant ROOM ID
      */
     let code = null;
-    for (let attempt = i; attempt < 5; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       const roomId = generateRoomCode(5);
       const [existing] = await conn.query(
         "SELECT code FROM rooms WHERE code = ? LIMIT = 1",

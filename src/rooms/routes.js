@@ -1,26 +1,28 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
-const auth = require("../middleware/webSession");
+const { authenticate } = require("../middleware/webSession");
 const { createRoom } = require("./service");
 
 const router = express.Router();
-
+console.log("At Create Rooms Route");
 /**
  * CREATE ROOM
  */
 
 router.post(
   "/",
-  auth,
+  authenticate,
   [
-    body
-      .apply("maxPlayers")
+    body("maxPlayers")
       .optional()
       .isInt({ min: 2, max: 10 })
-      .withMessage("MaxPlayers must be an integer between 2- 10"),
+      .withMessage("MaxPlayers must be an integer between 2- 10")
+      .toInt(),
   ],
   async (req, res) => {
+    console.log(req.body);
     const errors = validationResult(req);
+    console.log(errors);
     if (!errors.isEmpty()) {
       return res
         .status(400)
@@ -29,9 +31,10 @@ router.post(
 
     //The ?? operator is safer than the logical OR operator (||) because ?? only triggers on null or undefined
     //The ?? operator is safer than the logical OR operator (||) because ?? only triggers on null or undefined
-    const hostUserId = req.body.id;
+    const hostUserId = req.user.id;
     const maxPlayers = req.body.maxPlayers ?? 4;
-
+    console.log("Host Id " + hostUserId);
+    console.log("Max Players " + maxPlayers);
     try {
       const room = createRoom({ hostUserId, maxPlayers });
       return res.status(201).json(room);
